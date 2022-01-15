@@ -347,6 +347,7 @@ class AssistantActivity : AppCompatActivity() , AsyncResponse {
 
     fun getDate()
     {
+
         val calendar = Calendar.getInstance()
         val formattedDate = DateFormat.getDateInstance(DateFormat.FULL).format(calendar.time)
         val splitDate = formattedDate.split(",").toTypedArray()

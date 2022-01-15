@@ -7,10 +7,12 @@
         <entry key="app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.30666666666666664" />
         <entry key="app/src/main/res/layout/activity_assistant.xml" value="0.22735507246376813" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.22735507246376813" />
+        <entry key="app/src/main/res/layout/activity_main2.xml" value="0.1983695652173913" />
         <entry key="app/src/main/res/layout/assistant_item_layout.xml" value="0.223731884057971" />
         <entry key="app/src/main/res/layout/custom_email_dialogue.xml" value="0.25" />
         <entry key="app/src/main/res/menu/main.xml" value="0.2824074074074074" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.30666666666666664" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.29907407407407405" />
       </map>
     </option>
   </component>

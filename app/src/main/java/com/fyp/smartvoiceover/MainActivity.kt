@@ -54,7 +54,8 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         // for audio
         if (requestCode == RecordAudioRequestCode && grantResults.size > 0) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) Toast.makeText(
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                Toast.makeText(
                 this,
                 "Permission Granted",
                 Toast.LENGTH_SHORT
@@ -66,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.main, menu)
         return true
     }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.email -> {
@@ -131,6 +133,7 @@ class MainActivity : AppCompatActivity() {
         val sharedPreference =  getSharedPreferences("SECRETS", Context.MODE_PRIVATE)
         return sharedPreference.getString("Email",null)
     }
+
     fun getPassword(): String?{
         val sharedPreference =  getSharedPreferences("SECRETS", Context.MODE_PRIVATE)
         return sharedPreference.getString("Password",null)

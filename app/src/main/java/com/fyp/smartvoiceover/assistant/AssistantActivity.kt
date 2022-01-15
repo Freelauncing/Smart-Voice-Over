@@ -6,10 +6,7 @@ import android.animation.Animator
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.content.Intent
+import android.content.*
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -72,6 +69,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.jvm.internal.Ref.ObjectRef
 import android.webkit.WebViewClient
+import kotlin.collections.ArrayList
 
 interface AsyncResponse {
     fun onSuccess()
@@ -617,6 +615,45 @@ class AssistantActivity : AppCompatActivity() , AsyncResponse {
         }
     }
 
+    private fun getContacts(): ArrayList<String> {
+        val builder = StringBuilder()
+        var mylist = ArrayList<String>()
+        val resolver: ContentResolver = contentResolver;
+        val cursor = resolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null,
+            null)
+
+        if (cursor!!.count > 0) {
+            while (cursor.moveToNext()) {
+                val id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))
+                val name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
+                val phoneNumber = (cursor.getString(
+                    cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))).toInt()
+
+                if (phoneNumber > 0) {
+                    val cursorPhone = contentResolver.query(
+                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                        null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=?", arrayOf(id), null)
+
+                    if(cursorPhone!!.count > 0) {
+                        while (cursorPhone.moveToNext()) {
+                            val phoneNumValue = cursorPhone.getString(
+                                cursorPhone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                            builder.append("Contact: ").append(name).append(", Phone Number: ").append(
+                                phoneNumValue).append("\n\n")
+                            mylist.add("Contact: "+name+", Phone Number: "+phoneNumValue)
+                            Log.v("===>","Contact: "+name+", Phone Number: "+phoneNumValue);
+                        }
+                    }
+                    cursorPhone.close()
+                }
+            }
+        } else {
+            //   toast("No contacts available!")
+        }
+        cursor.close()
+        return mylist
+    }
+
     private fun callContact() {
         if (ContextCompat.checkSelfPermission(
                         this@AssistantActivity,
@@ -631,31 +668,41 @@ class AssistantActivity : AppCompatActivity() , AsyncResponse {
         }
         else
         {
+           // Log.v("KALOO",getContacts().toString())
             var name = keeper.split("call").toTypedArray()[1].trim { it <= ' ' }
             Log.d("chk", name)
             try {
-                val cursor = contentResolver.query(
-                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                    arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.TYPE),
-                        "DISPLAY_NAME LIKE '$name' ", null, null)
-                cursor!!.moveToFirst()
-                val number = cursor.getString(0)
-                speak("calling "+number)
-                // number must not have any spaces
-                if (number.trim { it <= ' ' }.length > 0) {
+                val contactList = getContacts();
+                var number:String = ""
 
-                    // runtime message
-                    if (ContextCompat.checkSelfPermission(this@AssistantActivity,
-                                    permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(this@AssistantActivity, arrayOf(permission.CALL_PHONE), REQUESTCALL)
-                    } else {
-                        // passing intent
-                        val dial = "tel:$number"
-                        startActivity(Intent(Intent.ACTION_CALL, Uri.parse(dial)))
+                for (contact in contactList){
+                    if (contact.contains(name,ignoreCase = true)){
+                        number = contact.split(",")[1]
+                        number = number.split(":")[1]
+                        break
                     }
-                } else {
-                    // invalid phone
-                    Toast.makeText(this@AssistantActivity, "Enter Phone Number", Toast.LENGTH_SHORT).show()
+                }
+
+                if(number!=""){
+                    speak("calling "+number)
+                    // number must not have any spaces
+                    if (number.trim { it <= ' ' }.length > 0) {
+
+                        // runtime message
+                        if (ContextCompat.checkSelfPermission(this@AssistantActivity,
+                                        permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                            ActivityCompat.requestPermissions(this@AssistantActivity, arrayOf(permission.CALL_PHONE), REQUESTCALL)
+                        } else {
+                            // passing intent
+                            val dial = "tel:$number"
+                            startActivity(Intent(Intent.ACTION_CALL, Uri.parse(dial)))
+                        }
+                    } else {
+                        // invalid phone
+                        Toast.makeText(this@AssistantActivity, "Enter Phone Number", Toast.LENGTH_SHORT).show()
+                    }
+                }else{
+                    speak("Name "+name+" not found")
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

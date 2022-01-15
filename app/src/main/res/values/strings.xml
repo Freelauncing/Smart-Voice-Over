@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Smart Voice Over</string>
+    <string name="fab_content_desc">Mic Start</string>
+    <string name="first_message">Hello, how can I help you?</string>
+    <string name="second_message">Can you tell me something?</string>
+    <string name="OPEN_WEATHER_MAP_API_KEY">8c7175339095430fdf24c1cac276d9d5</string>
+</resources>

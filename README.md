@@ -4,7 +4,7 @@ This application is a Simple Voice Assistant for android developers out their to
 # Installation
 Run the command in your terminal
 ```
-git clone https://github.com/AnshGaikwad/Advance-Voice-Assistant.git
+git clone https://github.com/Freelauncing/Smart-Voice-Over
 ```
 Or you can just clone it through [android studio](https://developer.android.com/studio) which will be much easier.
 Note: Always run te application on a real device rather running it on a emulator

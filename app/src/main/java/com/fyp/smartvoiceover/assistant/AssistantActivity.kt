@@ -252,6 +252,7 @@ class AssistantActivity : AppCompatActivity() , AsyncResponse {
                         keeper.contains("time",ignoreCase = true) -> getTime()
                         keeper.contains("phone call",ignoreCase = true) -> makeAPhoneCall()
                         keeper.contains("send SMS",ignoreCase = true) -> sendSMS()
+                        keeper.contains("send Message to",ignoreCase = true) -> sendMessageTo()
                         keeper.contains("read my last SMS",ignoreCase = true) -> readSMS()
                         keeper.contains("send email",ignoreCase = true) -> openGmail()
                         keeper.contains("reset email",ignoreCase = true) -> resetGmail()
@@ -438,6 +439,53 @@ class AssistantActivity : AppCompatActivity() , AsyncResponse {
     }
 
 
+    private fun sendMessageTo(){
+        if (ContextCompat.checkSelfPermission(
+                this@AssistantActivity,
+                Manifest.permission.SEND_SMS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this@AssistantActivity,
+                arrayOf(Manifest.permission.SEND_SMS),
+                SENDSMS
+            )
+            Log.d("keeper", "Done1")
+        }else{
+            Log.d("keeper", "Done2")
+
+            var name = keeper.substring(16)
+            name = name.split(" ")[0]
+            val message = keeper.split("that").toTypedArray()[1]
+            val contactList = getContacts();
+            var number:String = ""
+
+            for (contact in contactList){
+                if (contact.contains(name,ignoreCase = true)){
+                    number = contact.split(",")[1]
+                    number = number.split(":")[1]
+                    break
+                }
+            }
+           if(number!="") {
+               Log.d("chk", name + message)
+
+
+               Log.v("KALOO2", "Number" + number + " message" + message)
+               val mySmsManager = SmsManager.getDefault()
+               mySmsManager.sendTextMessage(
+                   number.trim { it <= ' ' },
+                   null,
+                   message.trim { it <= ' ' },
+                   null,
+                   null
+               )
+               speak("Successfully Message sent to $name that $message")
+           }else{
+               speak("Name not Found")
+           }
+        }
+    }
 
     // send sms to 77986999685 that message
     private fun sendSMS() {
@@ -555,6 +603,8 @@ class AssistantActivity : AppCompatActivity() , AsyncResponse {
             speak("Email Receiver  is Empty or Missing")
         }else {
             speak("I am Sending an Email to "+emailSentTo)
+            Log.v("KALOO1",getEmail()+"")
+            Log.v("KALOO1",getPassword()+"")
              sendEmailTask.execute(getEmail(),getPassword(),emailSubject,emailBody,emailSentTo)
         }
         // turn on the button please then it works

@@ -7,6 +7,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
@@ -15,6 +17,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import com.fyp.smartvoiceover.assistant.AssistantActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.util.*
@@ -41,8 +44,14 @@ class MainActivity : AppCompatActivity() {
 
         // setting on click listener
         floatingActionButton.setOnClickListener{
+            buzz(longArrayOf(100, 100, 100, 100, 100, 100,100, 100, 100))
             startActivity(Intent(this@MainActivity, AssistantActivity::class.java))
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        buzz(longArrayOf(100, 100, 100, 100, 100, 100,100, 100, 100))
     }
 
     // on request permission
@@ -137,5 +146,18 @@ class MainActivity : AppCompatActivity() {
     fun getPassword(): String?{
         val sharedPreference =  getSharedPreferences("SECRETS", Context.MODE_PRIVATE)
         return sharedPreference.getString("Password",null)
+    }
+
+    fun buzz(pattern: LongArray) {
+        val buzzer = this.getSystemService<Vibrator>()
+        buzzer?.let {
+            // Vibrate for 500 milliseconds
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                buzzer.vibrate(VibrationEffect.createWaveform(pattern, -1))
+            } else {
+                //deprecated in API 26
+                buzzer.vibrate(pattern, -1)
+            }
+        }
     }
 }

@@ -70,13 +70,49 @@ import java.util.*
 import kotlin.jvm.internal.Ref.ObjectRef
 import android.webkit.WebViewClient
 import kotlin.collections.ArrayList
+import android.content.Intent
+
+import android.content.BroadcastReceiver
+import android.telephony.SmsMessage
+
 
 interface AsyncResponse {
     fun onSuccess()
     fun onFailure()
 }
+interface MessageListener {
+    /**
+     * To call this method when new message received and send back
+     * @param message Message
+     */
+    fun messageReceived(message: String?)
+}
 
-class AssistantActivity : AppCompatActivity() , AsyncResponse {
+class MessageReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent) {
+        val data = intent.extras
+        val pdus = data!!["pdus"] as Array<Any>?
+        for (i in pdus!!.indices) {
+            val smsMessage: SmsMessage = SmsMessage.createFromPdu(pdus[i] as ByteArray)
+            val message =
+                    "Sender : " + smsMessage.getDisplayOriginatingAddress().toString()+
+//                    "Email From: " + smsMessage.getEmailFrom().toString() +
+//                    "Emal Body: " + smsMessage.getEmailBody().toString() +
+                    "Display message body: " + smsMessage.getDisplayMessageBody().toString() +
+//                    "Time in millisecond: " + smsMessage.getTimestampMillis().toString() +
+                    "Message: " + smsMessage.getMessageBody()
+            mListener!!.messageReceived(message)
+        }
+    }
+
+    companion object {
+        private var mListener: MessageListener? = null
+        fun bindListener(listener: MessageListener?) {
+            mListener = listener
+        }
+    }
+}
+class AssistantActivity : AppCompatActivity() , AsyncResponse,MessageListener {
 
     // views
     private lateinit var binding: ActivityAssistantBinding
@@ -132,6 +168,8 @@ class AssistantActivity : AppCompatActivity() , AsyncResponse {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         overridePendingTransition(R.anim.do_not_move, R.anim.do_not_move)
+
+        MessageReceiver.bindListener(this);
 
         // data binding
         binding = DataBindingUtil.setContentView(this, R.layout.activity_assistant)
@@ -534,7 +572,7 @@ class AssistantActivity : AppCompatActivity() , AsyncResponse {
             )
         }
         else {
-            val cursor = contentResolver.query(Uri.parse("content://sms"), null, null, null, null)
+            val cursor = contentResolver.query(Uri.parse("content://sms/inbox"), null, null, null, null)
             cursor!!.moveToFirst()
             speak("Your last message was " + cursor.getString(12))
         }
@@ -1206,6 +1244,10 @@ class AssistantActivity : AppCompatActivity() , AsyncResponse {
         speechRecognizer.destroy()
         Log.i(logsr, "destroy")
         Log.i(logtts, "destroy")
+    }
+
+    override fun messageReceived(message: String?) {
+        speak( "New Message Received: " + message)
     }
 
 
